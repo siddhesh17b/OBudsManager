@@ -38,6 +38,11 @@ namespace OBudsManager
             // Initialize tray, startup toggle state, and Bluetooth scan immediately.
             // This ensures logic runs even if the app starts minimized to the tray (where WPF Loaded is not fired).
             InitializeTrayIcon();
+            
+            // Load saved settings
+            AppSettings settings = LoadSettings();
+            ToggleTray.IsChecked = settings.MinimizeToTray;
+
             ToggleStartup.IsChecked = IsStartupEnabled();
             _btManager.Start();
 
@@ -509,5 +514,62 @@ namespace OBudsManager
             DrawerTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, slideOut);
             DrawerBacking.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
+
+        private static readonly string SettingsFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
+            "OBudsManager");
+        private static readonly string SettingsFile = Path.Combine(SettingsFolder, "settings.json");
+
+        private void ToggleTray_Click(object sender, RoutedEventArgs e)
+        {
+            AppSettings settings = new AppSettings
+            {
+                MinimizeToTray = ToggleTray.IsChecked == true
+            };
+            SaveSettings(settings);
+        }
+
+        private void SaveSettings(AppSettings settings)
+        {
+            try
+            {
+                if (!Directory.Exists(SettingsFolder))
+                {
+                    Directory.CreateDirectory(SettingsFolder);
+                }
+                string json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(SettingsFile, json);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to save settings: {ex.Message}");
+            }
+        }
+
+        private AppSettings LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(SettingsFile))
+                {
+                    string json = File.ReadAllText(SettingsFile);
+                    var settings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+                    if (settings != null)
+                    {
+                        return settings;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to load settings: {ex.Message}");
+            }
+            return new AppSettings(); // Return defaults
+        }
+    }
+
+    public class AppSettings
+    {
+        public bool MinimizeToTray { get; set; } = true;
     }
 }

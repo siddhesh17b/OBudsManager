@@ -178,7 +178,7 @@
                                             <TextBlock Text="Minimize to System Tray" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                             <TextBlock Text="Close window to background tray" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                         </StackPanel>
-                                        <ui:ToggleSwitch x:Name="ToggleTray" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" />
+                                        <ui:ToggleSwitch x:Name="ToggleTray" Grid.Column="1" IsChecked="True" Click="ToggleTray_Click" VerticalAlignment="Center" />
                                     </Grid>
                                 </ui:Card>
 
