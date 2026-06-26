@@ -22,15 +22,22 @@
             <ui:TitleBar.Icon>
                 <ui:SymbolIcon Symbol="Bluetooth24" Foreground="Red" />
             </ui:TitleBar.Icon>
-            <ui:TitleBar.TrailingContent>
-                <ui:Button x:Name="BtnInfo" Appearance="Transparent" Width="32" Height="32" Margin="0,0,8,0" Padding="0" Click="BtnInfo_Click" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="About O Buds Manager">
-                    <ui:SymbolIcon Symbol="Info24" />
-                </ui:Button>
-            </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20,10,20,20">
+
+                <!-- Header with Info Button -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Device Status" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    <ui:Button x:Name="BtnInfo" Grid.Column="1" Appearance="Transparent" Width="32" Height="32" Padding="0" Click="BtnInfo_Click" ToolTip="About O Buds Manager">
+                        <ui:SymbolIcon Symbol="Info24" />
+                    </ui:Button>
+                </Grid>
 
                 <!-- Connection Status Card -->
                 <ui:Card Padding="16" Margin="0,0,0,16">

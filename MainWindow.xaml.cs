@@ -290,7 +290,8 @@ namespace OBudsManager
             {
                 Title = "About O Buds Manager",
                 CloseButtonText = "Close",
-                MaxWidth = 340
+                MaxWidth = 340,
+                Topmost = false
             };
 
             var mainPanel = new System.Windows.Controls.StackPanel
