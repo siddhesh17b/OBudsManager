@@ -157,6 +157,7 @@ namespace OBudsManager
                     ScanningMode = BluetoothLEScanningMode.Active
                 };
 
+                bool deviceDiscovered = false;
                 _watcher.Received += async (sender, args) =>
                 {
                     if (token.IsCancellationRequested) return;
@@ -164,7 +165,14 @@ namespace OBudsManager
                     string name = args.Advertisement.LocalName;
                     if (IsMatchingDeviceName(name))
                     {
-                        _watcher.Stop();
+                        lock (_lock)
+                        {
+                            if (deviceDiscovered) return;
+                            deviceDiscovered = true;
+                        }
+
+                        try { ((BluetoothLEAdvertisementWatcher)sender).Stop(); } catch { }
+                        
                         Debug.WriteLine($"Discovered device via advertisement: {name}. Connecting...");
                         UpdateStatus(false, $"Found {name}, connecting...");
                         
@@ -182,6 +190,7 @@ namespace OBudsManager
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Scanning failed: {ex.Message}");
+                    UpdateStatus(false, "Bluetooth is off or unavailable.");
                 }
                 finally
                 {
@@ -229,14 +238,18 @@ namespace OBudsManager
             _isConnecting = true;
             try
             {
-                _device!.ConnectionStatusChanged += Device_ConnectionStatusChanged;
+                var device = _device;
+                if (device == null) return false;
+
+                device.ConnectionStatusChanged += Device_ConnectionStatusChanged;
 
                 // Discover services (try Cached first for speed and compatibility with already connected devices, fallback to Uncached)
-                var servicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Cached);
+                var servicesResult = await device.GetGattServicesAsync(BluetoothCacheMode.Cached);
                 if (servicesResult.Status != GattCommunicationStatus.Success || servicesResult.Services.Count == 0)
                 {
                     Debug.WriteLine("Cached services not found or failed. Trying Uncached...");
-                    servicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+                    if (token.IsCancellationRequested) return false;
+                    servicesResult = await device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
                 }
 
                 if (servicesResult.Status != GattCommunicationStatus.Success)
@@ -248,9 +261,11 @@ namespace OBudsManager
 
                 foreach (var service in servicesResult.Services)
                 {
+                    if (token.IsCancellationRequested) return false;
                     var charsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Cached);
                     if (charsResult.Status != GattCommunicationStatus.Success || charsResult.Characteristics.Count == 0)
                     {
+                        if (token.IsCancellationRequested) return false;
                         charsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
                     }
                     if (charsResult.Status != GattCommunicationStatus.Success) continue;
@@ -297,7 +312,7 @@ namespace OBudsManager
                 await WriteBytesAsync(REGISTER_PKT);
                 await Task.Delay(1500, token);
 
-                UpdateStatus(true, $"Connected to {_device.Name}");
+                UpdateStatus(true, $"Connected to {device.Name}");
 
                 // Immediately query battery status
                 await QueryBatteryAsync();
@@ -338,6 +353,8 @@ namespace OBudsManager
         {
             try
             {
+                if (args.CharacteristicValue == null || args.CharacteristicValue.Length == 0) return;
+
                 var reader = DataReader.FromBuffer(args.CharacteristicValue);
                 byte[] data = new byte[args.CharacteristicValue.Length];
                 reader.ReadBytes(data);
@@ -377,10 +394,11 @@ namespace OBudsManager
 
         private async Task WriteBytesAsync(byte[] bytes)
         {
-            if (_writeCharacteristic == null) return;
+            var writeChar = _writeCharacteristic;
+            if (writeChar == null) return;
             try
             {
-                var result = await _writeCharacteristic.WriteValueWithResultAsync(
+                var result = await writeChar.WriteValueWithResultAsync(
                     bytes.AsBuffer(), 
                     GattWriteOption.WriteWithoutResponse);
                 
@@ -433,43 +451,46 @@ namespace OBudsManager
 
         private void Cleanup()
         {
+            BluetoothLEDevice? device;
+            GattCharacteristic? notifyChar;
+            GattCharacteristic? fe2cChar;
+            BluetoothLEAdvertisementWatcher? watcher;
+
             lock (_lock)
             {
                 _isConnected = false;
+                device = _device;
+                notifyChar = _notifyCharacteristic;
+                fe2cChar = _fe2cCharacteristic;
+                watcher = _watcher;
+
+                _device = null;
+                _writeCharacteristic = null;
+                _notifyCharacteristic = null;
+                _fe2cCharacteristic = null;
+                _watcher = null;
             }
 
-            if (_device != null)
+            if (device != null)
             {
-                _device.ConnectionStatusChanged -= Device_ConnectionStatusChanged;
+                try { device.ConnectionStatusChanged -= Device_ConnectionStatusChanged; } catch { }
+                try { device.Dispose(); } catch { }
             }
 
-            if (_notifyCharacteristic != null)
+            if (notifyChar != null)
             {
-                _notifyCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+                try { notifyChar.ValueChanged -= Characteristic_ValueChanged; } catch { }
             }
 
-            if (_fe2cCharacteristic != null)
+            if (fe2cChar != null)
             {
-                _fe2cCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+                try { fe2cChar.ValueChanged -= Characteristic_ValueChanged; } catch { }
             }
 
-            _writeCharacteristic = null;
-            _notifyCharacteristic = null;
-            _fe2cCharacteristic = null;
-            
-            try
+            if (watcher != null)
             {
-                _device?.Dispose();
+                try { watcher.Stop(); } catch { }
             }
-            catch { }
-            _device = null;
-
-            try
-            {
-                _watcher?.Stop();
-            }
-            catch { }
-            _watcher = null;
         }
     }
 }

@@ -21,6 +21,10 @@ namespace OBudsManager
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool ChangeWindowMessageFilter(uint message, uint dwFlag);
+
+        private const uint MSGFLT_ADD = 1;
         private static readonly IntPtr HWND_BROADCAST = (IntPtr)0xffff;
         public static uint RestoreMessageId { get; private set; }
 
@@ -28,6 +32,10 @@ namespace OBudsManager
         {
             // Register the custom system-wide message for restoring the window
             RestoreMessageId = RegisterWindowMessage("OBudsManager_RestoreMessage");
+            if (RestoreMessageId != 0)
+            {
+                ChangeWindowMessageFilter(RestoreMessageId, MSGFLT_ADD);
+            }
 
             // Acquire system-wide named Mutex
             _appMutex = new Mutex(true, MutexName, out bool createdNew);

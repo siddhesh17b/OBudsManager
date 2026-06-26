@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:OBudsManager"
         mc:Ignorable="d"
-        Title="O Buds Manager" Height="470" Width="380"
+        Title="OBuds Manager" Height="470" Width="380"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         WindowStartupLocation="CenterScreen"
@@ -18,7 +18,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="O Buds Manager">
+        <ui:TitleBar Grid.Row="0" Title="OBuds Manager">
             <ui:TitleBar.Icon>
                 <ui:SymbolIcon Symbol="Bluetooth24" Foreground="Red" />
             </ui:TitleBar.Icon>
@@ -37,7 +37,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="Device Status" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                        <ui:Button x:Name="BtnInfo" Grid.Column="1" Appearance="Transparent" Width="32" Height="32" Padding="0" Margin="0,0,8,0" Click="BtnInfo_Click" ToolTip="About O Buds Manager">
+                        <ui:Button x:Name="BtnInfo" Grid.Column="1" Appearance="Transparent" Width="32" Height="32" Padding="0" Margin="0,0,8,0" Click="BtnInfo_Click" ToolTip="About OBuds Manager">
                             <ui:SymbolIcon Symbol="Info24" />
                         </ui:Button>
                         <ui:Button x:Name="BtnMenu" Grid.Column="2" Appearance="Transparent" Width="32" Height="32" Padding="0" Click="BtnMenu_Click" ToolTip="Settings">

@@ -22,7 +22,11 @@ namespace OBudsManager
             
             // Force native handle creation so that the WndProc hook can be registered and tray notifications work
             // even when the application starts hidden (minimized to system tray)
-            new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+            IntPtr handle = new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+            
+            // Hook the WndProc message loop immediately to ensure we receive restore messages even if started minimized
+            var hwndSource = System.Windows.Interop.HwndSource.FromHwnd(handle);
+            hwndSource?.AddHook(WndProc);
             
             // Watch system theme changes (Light/Dark mode)
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
@@ -38,15 +42,6 @@ namespace OBudsManager
             _btManager.Start();
 
             Closing += MainWindow_Closing;
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-            
-            // Hook the WndProc message loop to intercept the system-wide single-instance restore message
-            var hwndSource = System.Windows.Interop.HwndSource.FromHwnd(new System.Windows.Interop.WindowInteropHelper(this).Handle);
-            hwndSource?.AddHook(WndProc);
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -73,7 +68,7 @@ namespace OBudsManager
                 {
                     _notifyIcon.Icon = CreateTrayIcon();
                 }
-                _notifyIcon.Text = "O Buds Manager";
+                _notifyIcon.Text = "OBuds Manager";
                 _notifyIcon.Visible = true;
 
                 // Double click restores the UI
@@ -154,7 +149,7 @@ namespace OBudsManager
             {
                 e.Cancel = true;
                 Hide();
-                ShowNotification("Minimized to Tray", "O Buds Manager is still running in the background.");
+                ShowNotification("Minimized to Tray", "OBuds Manager is still running in the background.");
             }
             else
             {
@@ -175,8 +170,7 @@ namespace OBudsManager
                 if (e.IsConnected)
                 {
                     StatusIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.BluetoothConnected24;
-                    StatusIcon.Foreground = Wpf.Ui.Controls.ControlAppearance.Primary.Equals(Wpf.Ui.Controls.ControlAppearance.Primary) 
-                        ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.Green; // Visual pop
+                    StatusIcon.Foreground = System.Windows.Media.Brushes.Red; // Brand color accent
                     
                     StatusTitle.Text = "Connected";
                     StatusSubtitle.Text = e.Message;
@@ -305,7 +299,7 @@ namespace OBudsManager
         {
             var messageBox = new Wpf.Ui.Controls.MessageBox
             {
-                Title = "About O Buds Manager",
+                Title = "About OBuds Manager",
                 CloseButtonText = "Close",
                 MaxWidth = 340,
                 Topmost = false
@@ -320,7 +314,7 @@ namespace OBudsManager
             // App title text
             var titleBlock = new System.Windows.Controls.TextBlock
             {
-                Text = "O Buds Manager",
+                Text = "OBuds Manager",
                 FontSize = 18,
                 FontWeight = FontWeights.Bold,
                 Foreground = System.Windows.Media.Brushes.Red,
