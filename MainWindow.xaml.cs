@@ -1,0 +1,326 @@
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using Microsoft.Win32;
+
+namespace OBudsManager
+{
+    public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
+    {
+        private readonly BluetoothManager _btManager;
+        private System.Windows.Forms.NotifyIcon? _notifyIcon;
+        private bool _isExiting;
+        private bool _lowBatteryWarnedL;
+        private bool _lowBatteryWarnedR;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            
+            // Watch system theme changes (Light/Dark mode)
+            Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
+            _btManager = new BluetoothManager();
+            _btManager.ConnectionStateChanged += BtManager_ConnectionStateChanged;
+            _btManager.BatteryUpdated += BtManager_BatteryUpdated;
+
+            Loaded += MainWindow_Loaded;
+            Closing += MainWindow_Closing;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            InitializeTrayIcon();
+            
+            // Set initial startup toggle state
+            ToggleStartup.IsChecked = IsStartupEnabled();
+
+            // Start Bluetooth background process
+            _btManager.Start();
+        }
+
+        private void InitializeTrayIcon()
+        {
+            try
+            {
+                _notifyIcon = new System.Windows.Forms.NotifyIcon();
+                _notifyIcon.Icon = CreateTrayIcon();
+                _notifyIcon.Text = "O Buds Manager";
+                _notifyIcon.Visible = true;
+
+                // Double click restores the UI
+                _notifyIcon.DoubleClick += (s, e) => RestoreWindow();
+
+                // Context Menu
+                var contextMenu = new System.Windows.Forms.ContextMenuStrip();
+                contextMenu.Items.Add("Open Manager", null, (s, e) => RestoreWindow());
+                contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+                
+                var ancMenu = new System.Windows.Forms.ToolStripMenuItem("Noise Control");
+                ancMenu.DropDownItems.Add("ANC ON", null, async (s, e) => await _btManager.SetAncModeAsync("on"));
+                ancMenu.DropDownItems.Add("Transparent", null, async (s, e) => await _btManager.SetAncModeAsync("trans"));
+                ancMenu.DropDownItems.Add("ANC OFF", null, async (s, e) => await _btManager.SetAncModeAsync("off"));
+                contextMenu.Items.Add(ancMenu);
+
+                contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+                contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
+
+                _notifyIcon.ContextMenuStrip = contextMenu;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to initialize tray icon: {ex.Message}");
+            }
+        }
+
+        private System.Drawing.Icon CreateTrayIcon()
+        {
+            // Dynamically generate a beautiful 16x16 icon (Red circle with white 'O')
+            using (Bitmap bitmap = new Bitmap(16, 16))
+            {
+                using (Graphics g = Graphics.FromImage(bitmap))
+                {
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    g.Clear(Color.Transparent);
+
+                    // Red Circle (OnePlus Red accent)
+                    using (Brush brush = new SolidBrush(Color.FromArgb(235, 10, 30)))
+                    {
+                        g.FillEllipse(brush, 0, 0, 15, 15);
+                    }
+
+                    // White 'O'
+                    using (System.Drawing.Font font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold))
+                    using (Brush textBrush = new SolidBrush(Color.White))
+                    {
+                        // Centered text
+                        g.DrawString("O", font, textBrush, 3.5f, 0.5f);
+                    }
+                }
+                IntPtr hIcon = bitmap.GetHicon();
+                return System.Drawing.Icon.FromHandle(hIcon);
+            }
+        }
+
+        private void RestoreWindow()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Show();
+                WindowState = WindowState.Normal;
+                Visibility = Visibility.Visible;
+                Activate();
+            });
+        }
+
+        private void ExitApplication()
+        {
+            _isExiting = true;
+            Close();
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // If Tray minimization is enabled, hide window and cancel closing
+            if (ToggleTray.IsChecked == true && !_isExiting)
+            {
+                e.Cancel = true;
+                Hide();
+                ShowNotification("Minimized to Tray", "O Buds Manager is still running in the background.");
+            }
+            else
+            {
+                // Clean up resources
+                _btManager.Stop();
+                if (_notifyIcon != null)
+                {
+                    _notifyIcon.Visible = false;
+                    _notifyIcon.Dispose();
+                }
+            }
+        }
+
+        private void BtManager_ConnectionStateChanged(object? sender, ConnectionStateEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (e.IsConnected)
+                {
+                    StatusIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.BluetoothConnected24;
+                    StatusIcon.Foreground = Wpf.Ui.Controls.ControlAppearance.Primary.Equals(Wpf.Ui.Controls.ControlAppearance.Primary) 
+                        ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.Green; // Visual pop
+                    
+                    StatusTitle.Text = "Connected";
+                    StatusSubtitle.Text = e.Message;
+                    ConnectionLoading.Visibility = Visibility.Collapsed;
+
+                    BatteryPanel.IsEnabled = true;
+                    AncPanel.IsEnabled = true;
+
+                    ShowNotification("Connected", e.Message);
+                }
+                else
+                {
+                    StatusIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.BluetoothSearching24;
+                    StatusIcon.Foreground = System.Windows.Media.Brushes.Gray;
+
+                    StatusTitle.Text = "Searching...";
+                    StatusSubtitle.Text = e.Message;
+                    ConnectionLoading.Visibility = Visibility.Visible;
+
+                    BatteryPanel.IsEnabled = false;
+                    AncPanel.IsEnabled = false;
+
+                    // Reset values
+                    LeftBatteryRing.Progress = 0;
+                    LeftBatteryText.Text = "--";
+                    RightBatteryRing.Progress = 0;
+                    RightBatteryText.Text = "--";
+                    
+                    // Reset low battery warnings
+                    _lowBatteryWarnedL = false;
+                    _lowBatteryWarnedR = false;
+                }
+            });
+        }
+
+        private void BtManager_BatteryUpdated(object? sender, BatteryEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Left Earbud
+                if (e.Left >= 0)
+                {
+                    LeftBatteryRing.Progress = e.Left;
+                    LeftBatteryText.Text = $"{e.Left}%";
+                    
+                    // Low battery notification (below 15%)
+                    if (e.Left <= 15 && !_lowBatteryWarnedL)
+                    {
+                        _lowBatteryWarnedL = true;
+                        ShowNotification("Low Battery", $"Left earbud is low: {e.Left}%");
+                    }
+                    else if (e.Left > 15)
+                    {
+                        _lowBatteryWarnedL = false; // Reset warning
+                    }
+                }
+                else
+                {
+                    LeftBatteryRing.Progress = 0;
+                    LeftBatteryText.Text = "--";
+                }
+
+                // Right Earbud
+                if (e.Right >= 0)
+                {
+                    RightBatteryRing.Progress = e.Right;
+                    RightBatteryText.Text = $"{e.Right}%";
+
+                    // Low battery notification
+                    if (e.Right <= 15 && !_lowBatteryWarnedR)
+                    {
+                        _lowBatteryWarnedR = true;
+                        ShowNotification("Low Battery", $"Right earbud is low: {e.Right}%");
+                    }
+                    else if (e.Right > 15)
+                    {
+                        _lowBatteryWarnedR = false; // Reset warning
+                    }
+                }
+                else
+                {
+                    RightBatteryRing.Progress = 0;
+                    RightBatteryText.Text = "--";
+                }
+            });
+        }
+
+        private void ShowNotification(string title, string message)
+        {
+            try
+            {
+                _notifyIcon?.ShowBalloonTip(3000, title, message, System.Windows.Forms.ToolTipIcon.Info);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error showing balloon notification: {ex.Message}");
+            }
+        }
+
+        private async void BtnAncOn_Click(object sender, RoutedEventArgs e)
+        {
+            SetActiveAncButton("on");
+            await _btManager.SetAncModeAsync("on");
+        }
+
+        private async void BtnAncOff_Click(object sender, RoutedEventArgs e)
+        {
+            SetActiveAncButton("off");
+            await _btManager.SetAncModeAsync("off");
+        }
+
+        private async void BtnAncTrans_Click(object sender, RoutedEventArgs e)
+        {
+            SetActiveAncButton("trans");
+            await _btManager.SetAncModeAsync("trans");
+        }
+
+        private void SetActiveAncButton(string mode)
+        {
+            BtnAncOn.Appearance = mode == "on" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
+            BtnAncOff.Appearance = mode == "off" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
+            BtnAncTrans.Appearance = mode == "trans" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
+        }
+
+        private void ToggleStartup_Click(object sender, RoutedEventArgs e)
+        {
+            bool enable = ToggleStartup.IsChecked == true;
+            SetStartup(enable);
+        }
+
+        private void SetStartup(bool runAtStartup)
+        {
+            try
+            {
+                string path = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+                using RegistryKey? key = Registry.CurrentUser.OpenSubKey(path, true);
+                if (key != null)
+                {
+                    string appName = "OBudsManager";
+                    string appPath = Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                    if (runAtStartup && !string.IsNullOrEmpty(appPath))
+                    {
+                        key.SetValue(appName, $"\"{appPath}\" --minimized");
+                    }
+                    else
+                    {
+                        key.DeleteValue(appName, false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Failed to modify startup registry: {ex.Message}", "Settings Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private bool IsStartupEnabled()
+        {
+            try
+            {
+                string path = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+                using RegistryKey? key = Registry.CurrentUser.OpenSubKey(path, false);
+                if (key != null)
+                {
+                    return key.GetValue("OBudsManager") != null;
+                }
+            }
+            catch { }
+            return false;
+        }
+    }
+}
