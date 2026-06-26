@@ -9,7 +9,8 @@
         Title="O Buds Manager" Height="470" Width="380"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="app_icon.ico">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -21,6 +22,11 @@
             <ui:TitleBar.Icon>
                 <ui:SymbolIcon Symbol="Bluetooth24" Foreground="Red" />
             </ui:TitleBar.Icon>
+            <ui:TitleBar.TrailingContent>
+                <ui:Button x:Name="BtnInfo" Appearance="Transparent" Width="32" Height="32" Margin="0,0,8,0" Padding="0" Click="BtnInfo_Click" WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="About O Buds Manager">
+                    <ui:SymbolIcon Symbol="Info24" />
+                </ui:Button>
+            </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">

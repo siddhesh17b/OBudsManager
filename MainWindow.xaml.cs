@@ -47,7 +47,15 @@ namespace OBudsManager
             try
             {
                 _notifyIcon = new System.Windows.Forms.NotifyIcon();
-                _notifyIcon.Icon = CreateTrayIcon();
+                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_icon.ico");
+                if (File.Exists(iconPath))
+                {
+                    _notifyIcon.Icon = new System.Drawing.Icon(iconPath);
+                }
+                else
+                {
+                    _notifyIcon.Icon = CreateTrayIcon();
+                }
                 _notifyIcon.Text = "O Buds Manager";
                 _notifyIcon.Visible = true;
 
@@ -274,6 +282,105 @@ namespace OBudsManager
             BtnAncOn.Appearance = mode == "on" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
             BtnAncOff.Appearance = mode == "off" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
             BtnAncTrans.Appearance = mode == "trans" ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
+        }
+
+        private async void BtnInfo_Click(object sender, RoutedEventArgs e)
+        {
+            var messageBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Title = "About O Buds Manager",
+                CloseButtonText = "Close",
+                MaxWidth = 340
+            };
+
+            var mainPanel = new System.Windows.Controls.StackPanel
+            {
+                Margin = new Thickness(0, 0, 0, 10),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left
+            };
+
+            // App title text
+            var titleBlock = new System.Windows.Controls.TextBlock
+            {
+                Text = "O Buds Manager",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = System.Windows.Media.Brushes.Red,
+                Margin = new Thickness(0, 0, 0, 4)
+            };
+            mainPanel.Children.Add(titleBlock);
+
+            // Version text
+            var versionBlock = new System.Windows.Controls.TextBlock
+            {
+                Text = "Version 1.0.0",
+                FontSize = 12,
+                Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush"),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            mainPanel.Children.Add(versionBlock);
+
+            // Description text
+            var descBlock = new System.Windows.Controls.TextBlock
+            {
+                Text = "A Fluent utility to manage noise control modes and monitor battery levels for Oppo, OnePlus, and Realme earbuds on Windows 11.",
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 16)
+            };
+            mainPanel.Children.Add(descBlock);
+
+            // Developer text
+            var devBlock = new System.Windows.Controls.TextBlock
+            {
+                Text = "Developer: Siddhesh Bisen",
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+            mainPanel.Children.Add(devBlock);
+
+            // GitHub link
+            var linkPanel = new System.Windows.Controls.StackPanel
+            {
+                Orientation = System.Windows.Controls.Orientation.Horizontal
+            };
+
+            var githubLabel = new System.Windows.Controls.TextBlock
+            {
+                Text = "GitHub: ",
+                FontSize = 13,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+            linkPanel.Children.Add(githubLabel);
+
+            var linkButton = new Wpf.Ui.Controls.Button
+            {
+                Content = "siddhesh17b/OBudsManager",
+                Appearance = Wpf.Ui.Controls.ControlAppearance.Transparent,
+                Padding = new Thickness(0),
+                Foreground = System.Windows.Media.Brushes.DodgerBlue,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+            linkButton.Click += (s, args) =>
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("https://github.com/siddhesh17b/OBudsManager") { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Could not open website: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
+            linkPanel.Children.Add(linkButton);
+            mainPanel.Children.Add(linkPanel);
+
+            messageBox.Content = mainPanel;
+            messageBox.Owner = this;
+
+            await messageBox.ShowDialogAsync();
         }
 
         private void ToggleStartup_Click(object sender, RoutedEventArgs e)
