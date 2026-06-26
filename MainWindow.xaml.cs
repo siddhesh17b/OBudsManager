@@ -27,19 +27,13 @@ namespace OBudsManager
             _btManager.ConnectionStateChanged += BtManager_ConnectionStateChanged;
             _btManager.BatteryUpdated += BtManager_BatteryUpdated;
 
-            Loaded += MainWindow_Loaded;
-            Closing += MainWindow_Closing;
-        }
-
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
+            // Initialize tray, startup toggle state, and Bluetooth scan immediately.
+            // This ensures logic runs even if the app starts minimized to the tray (where WPF Loaded is not fired).
             InitializeTrayIcon();
-            
-            // Set initial startup toggle state
             ToggleStartup.IsChecked = IsStartupEnabled();
-
-            // Start Bluetooth background process
             _btManager.Start();
+
+            Closing += MainWindow_Closing;
         }
 
         private void InitializeTrayIcon()
@@ -429,6 +423,74 @@ namespace OBudsManager
             }
             catch { }
             return false;
+        }
+
+        private void BtnMenu_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDrawer();
+        }
+
+        private void BtnCloseDrawer_Click(object sender, RoutedEventArgs e)
+        {
+            CloseDrawer();
+        }
+
+        private void DrawerBacking_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            CloseDrawer();
+        }
+
+        private void OpenDrawer()
+        {
+            SettingsDrawer.Visibility = Visibility.Visible;
+            
+            // Slide in animation (TranslateTransform.X: 280 -> 0)
+            var slideIn = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 280,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(250),
+                EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            
+            // Fade in dim backing overlay (Opacity: 0 -> 0.4)
+            var fadeIn = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 0.4,
+                Duration = TimeSpan.FromMilliseconds(250)
+            };
+
+            DrawerTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, slideIn);
+            DrawerBacking.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+        }
+
+        private void CloseDrawer()
+        {
+            // Slide out animation (TranslateTransform.X: 0 -> 280)
+            var slideOut = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 280,
+                Duration = TimeSpan.FromMilliseconds(200),
+                EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn }
+            };
+
+            // Fade out dim backing overlay (Opacity: 0.4 -> 0)
+            var fadeOut = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0.4,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(200)
+            };
+
+            slideOut.Completed += (s, e) =>
+            {
+                SettingsDrawer.Visibility = Visibility.Collapsed;
+            };
+
+            DrawerTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, slideOut);
+            DrawerBacking.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
     }
 }

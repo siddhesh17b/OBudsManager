@@ -24,136 +24,183 @@
             </ui:TitleBar.Icon>
         </ui:TitleBar>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="20,10,20,20">
+        <Grid Grid.Row="1">
+            <!-- Main Content ScrollViewer -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20,10,20,20">
 
-                <!-- Header with Info Button -->
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="Device Status" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                    <ui:Button x:Name="BtnInfo" Grid.Column="1" Appearance="Transparent" Width="32" Height="32" Padding="0" Click="BtnInfo_Click" ToolTip="About O Buds Manager">
-                        <ui:SymbolIcon Symbol="Info24" />
-                    </ui:Button>
-                </Grid>
-
-                <!-- Connection Status Card -->
-                <ui:Card Padding="16" Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ui:SymbolIcon x:Name="StatusIcon" Symbol="BluetoothSearching24" Grid.Column="0" Margin="0,0,12,0" FontSize="28" Foreground="#718096" />
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock x:Name="StatusTitle" Text="Scanning..." FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                            <TextBlock x:Name="StatusSubtitle" Text="Looking for paired buds" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                        </StackPanel>
-                        <ui:ProgressRing x:Name="ConnectionLoading" Grid.Column="2" IsIndeterminate="True" Width="20" Height="20" BorderThickness="2" />
-                    </Grid>
-                </ui:Card>
-
-                <!-- Earbud Battery Panel -->
-                <Grid x:Name="BatteryPanel" IsEnabled="False" Margin="0,0,0,16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Left Bud Card -->
-                    <ui:Card Grid.Column="0" Margin="0,0,8,0" Padding="16">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="Left Earbud" Margin="0,0,0,8" FontWeight="Medium" HorizontalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                            <Grid HorizontalAlignment="Center">
-                                <ui:ProgressRing x:Name="LeftBatteryRing" Progress="0" Width="68" Height="68" BorderThickness="5" Foreground="#107C41" />
-                                <TextBlock x:Name="LeftBatteryText" Text="--" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Grid>
-                        </StackPanel>
-                    </ui:Card>
-
-                    <!-- Right Bud Card -->
-                    <ui:Card Grid.Column="1" Margin="8,0,0,0" Padding="16">
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock Text="Right Earbud" Margin="0,0,0,8" FontWeight="Medium" HorizontalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                            <Grid HorizontalAlignment="Center">
-                                <ui:ProgressRing x:Name="RightBatteryRing" Progress="0" Width="68" Height="68" BorderThickness="5" Foreground="#107C41" />
-                                <TextBlock x:Name="RightBatteryText" Text="--" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Grid>
-                        </StackPanel>
-                    </ui:Card>
-                </Grid>
-
-                <!-- Noise Control Expandable Panel -->
-                <ui:CardExpander Header="Noise Control" IsExpanded="True" x:Name="AncPanel" IsEnabled="False" Margin="0,0,0,16">
-                    <ui:CardExpander.Icon>
-                        <ui:SymbolIcon Symbol="Shield24" />
-                    </ui:CardExpander.Icon>
-                    <Grid Margin="0,4,0,4">
+                    <!-- Header with Menu and Info Buttons -->
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
-                        <ui:Button x:Name="BtnAncOn" Grid.Column="0" Margin="2" Padding="8,12" Click="BtnAncOn_Click" HorizontalAlignment="Stretch">
-                            <StackPanel>
-                                <ui:SymbolIcon Symbol="Shield24" Filled="True" Margin="0,0,0,4" HorizontalAlignment="Center" />
-                                <TextBlock Text="ANC" FontSize="11" HorizontalAlignment="Center" />
-                            </StackPanel>
+                        <TextBlock Text="Device Status" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <ui:Button x:Name="BtnInfo" Grid.Column="1" Appearance="Transparent" Width="32" Height="32" Padding="0" Margin="0,0,8,0" Click="BtnInfo_Click" ToolTip="About O Buds Manager">
+                            <ui:SymbolIcon Symbol="Info24" />
                         </ui:Button>
-
-                        <ui:Button x:Name="BtnAncOff" Grid.Column="1" Margin="2" Padding="8,12" Click="BtnAncOff_Click" HorizontalAlignment="Stretch">
-                            <StackPanel>
-                                <ui:SymbolIcon Symbol="SpeakerOff24" Margin="0,0,0,4" HorizontalAlignment="Center" />
-                                <TextBlock Text="Off" FontSize="11" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </ui:Button>
-
-                        <ui:Button x:Name="BtnAncTrans" Grid.Column="2" Margin="2" Padding="8,12" Click="BtnAncTrans_Click" HorizontalAlignment="Stretch">
-                            <StackPanel>
-                                <ui:SymbolIcon Symbol="Speaker224" Margin="0,0,0,4" HorizontalAlignment="Center" />
-                                <TextBlock Text="Transparent" FontSize="11" HorizontalAlignment="Center" />
-                            </StackPanel>
+                        <ui:Button x:Name="BtnMenu" Grid.Column="2" Appearance="Transparent" Width="32" Height="32" Padding="0" Click="BtnMenu_Click" ToolTip="Settings">
+                            <ui:SymbolIcon Symbol="Navigation24" />
                         </ui:Button>
                     </Grid>
-                </ui:CardExpander>
 
-                <!-- Settings Expandable Panel -->
-                <ui:CardExpander Header="Settings" IsExpanded="False">
-                    <ui:CardExpander.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" />
-                    </ui:CardExpander.Icon>
-                    <StackPanel Margin="0,4,0,4">
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Minimize to System Tray" FontWeight="Medium" />
-                                <TextBlock Text="Close window to background tray" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
-                            </StackPanel>
-                            <ui:ToggleSwitch x:Name="ToggleTray" Grid.Column="1" IsChecked="True" />
-                        </Grid>
-                        <Separator Margin="0,0,0,12" />
+                    <!-- Connection Status Card -->
+                    <ui:Card Padding="16" Margin="0,0,0,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Start with Windows" FontWeight="Medium" />
-                                <TextBlock Text="Launch minimized at Windows startup" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <ui:SymbolIcon x:Name="StatusIcon" Symbol="BluetoothSearching24" Grid.Column="0" Margin="0,0,12,0" FontSize="28" Foreground="#718096" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="StatusTitle" Text="Scanning..." FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                <TextBlock x:Name="StatusSubtitle" Text="Looking for paired buds" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ui:ToggleSwitch x:Name="ToggleStartup" Grid.Column="1" Click="ToggleStartup_Click" />
+                            <ui:ProgressRing x:Name="ConnectionLoading" Grid.Column="2" IsIndeterminate="True" Width="20" Height="20" BorderThickness="2" />
                         </Grid>
-                    </StackPanel>
-                </ui:CardExpander>
+                    </ui:Card>
 
-            </StackPanel>
-        </ScrollViewer>
+                    <!-- Earbud Battery Panel -->
+                    <Grid x:Name="BatteryPanel" IsEnabled="False" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Bud Card -->
+                        <ui:Card Grid.Column="0" Margin="0,0,8,0" Padding="16">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Left Earbud" Margin="0,0,0,8" FontWeight="Medium" HorizontalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <Grid HorizontalAlignment="Center">
+                                    <ui:ProgressRing x:Name="LeftBatteryRing" Progress="0" Width="68" Height="68" BorderThickness="5" Foreground="#107C41" />
+                                    <TextBlock x:Name="LeftBatteryText" Text="--" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+
+                        <!-- Right Bud Card -->
+                        <ui:Card Grid.Column="1" Margin="8,0,0,0" Padding="16">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Right Earbud" Margin="0,0,0,8" FontWeight="Medium" HorizontalAlignment="Center" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                <Grid HorizontalAlignment="Center">
+                                    <ui:ProgressRing x:Name="RightBatteryRing" Progress="0" Width="68" Height="68" BorderThickness="5" Foreground="#107C41" />
+                                    <TextBlock x:Name="RightBatteryText" Text="--" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                            </StackPanel>
+                        </ui:Card>
+                    </Grid>
+
+                    <!-- Noise Control Expandable Panel -->
+                    <ui:CardExpander Header="Noise Control" IsExpanded="True" x:Name="AncPanel" IsEnabled="False" Margin="0,0,0,16">
+                        <ui:CardExpander.Icon>
+                            <ui:SymbolIcon Symbol="Shield24" />
+                        </ui:CardExpander.Icon>
+                        <Grid Margin="0,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <ui:Button x:Name="BtnAncOn" Grid.Column="0" Margin="2" Padding="8,12" Click="BtnAncOn_Click" HorizontalAlignment="Stretch">
+                                <StackPanel>
+                                    <ui:SymbolIcon Symbol="Shield24" Filled="True" Margin="0,0,0,4" HorizontalAlignment="Center" />
+                                    <TextBlock Text="ANC" FontSize="11" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </ui:Button>
+
+                            <ui:Button x:Name="BtnAncOff" Grid.Column="1" Margin="2" Padding="8,12" Click="BtnAncOff_Click" HorizontalAlignment="Stretch">
+                                <StackPanel>
+                                    <ui:SymbolIcon Symbol="SpeakerOff24" Margin="0,0,0,4" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Off" FontSize="11" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </ui:Button>
+
+                            <ui:Button x:Name="BtnAncTrans" Grid.Column="2" Margin="2" Padding="8,12" Click="BtnAncTrans_Click" HorizontalAlignment="Stretch">
+                                <StackPanel>
+                                    <ui:SymbolIcon Symbol="Speaker224" Margin="0,0,0,4" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Transparent" FontSize="11" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </ui:Button>
+                        </Grid>
+                    </ui:CardExpander>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Settings Drawer Overlay (Hidden by default) -->
+            <Grid x:Name="SettingsDrawer" Visibility="Collapsed" Panel.ZIndex="100">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="280" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Dim Backing Overlay (Click to Close) -->
+                <Border x:Name="DrawerBacking" Grid.Column="0" Background="Black" Opacity="0" MouseLeftButtonDown="DrawerBacking_MouseLeftButtonDown" />
+
+                <!-- Drawer Content -->
+                <Border x:Name="DrawerContentBorder" Grid.Column="1" Background="{DynamicResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1,0,0,0">
+                    <Border.RenderTransform>
+                        <TranslateTransform x:Name="DrawerTransform" X="280" />
+                    </Border.RenderTransform>
+
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Drawer Header -->
+                        <Grid Grid.Row="0" Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Settings" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                            <ui:Button x:Name="BtnCloseDrawer" Grid.Column="1" Appearance="Transparent" Width="30" Height="30" Padding="0" Click="BtnCloseDrawer_Click" ToolTip="Close">
+                                <ui:SymbolIcon Symbol="Dismiss24" />
+                            </ui:Button>
+                        </Grid>
+
+                        <!-- Drawer Settings Controls -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Minimize to System Tray -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Minimize to System Tray" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="Close window to background tray" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:ToggleSwitch x:Name="ToggleTray" Grid.Column="1" IsChecked="True" VerticalAlignment="Center" />
+                                    </Grid>
+                                </ui:Card>
+
+                                <!-- Start with Windows -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Start with Windows" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="Launch minimized at startup" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:ToggleSwitch x:Name="ToggleStartup" Grid.Column="1" Click="ToggleStartup_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </ui:Card>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
     </Grid>
 </ui:FluentWindow>

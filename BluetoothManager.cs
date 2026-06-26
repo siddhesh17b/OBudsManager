@@ -231,8 +231,14 @@ namespace OBudsManager
             {
                 _device!.ConnectionStatusChanged += Device_ConnectionStatusChanged;
 
-                // Discover services
-                var servicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+                // Discover services (try Cached first for speed and compatibility with already connected devices, fallback to Uncached)
+                var servicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Cached);
+                if (servicesResult.Status != GattCommunicationStatus.Success || servicesResult.Services.Count == 0)
+                {
+                    Debug.WriteLine("Cached services not found or failed. Trying Uncached...");
+                    servicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+                }
+
                 if (servicesResult.Status != GattCommunicationStatus.Success)
                 {
                     Debug.WriteLine("Failed to get GATT services.");
@@ -240,10 +246,13 @@ namespace OBudsManager
                     return false;
                 }
 
-
                 foreach (var service in servicesResult.Services)
                 {
-                    var charsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
+                    var charsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Cached);
+                    if (charsResult.Status != GattCommunicationStatus.Success || charsResult.Characteristics.Count == 0)
+                    {
+                        charsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
+                    }
                     if (charsResult.Status != GattCommunicationStatus.Success) continue;
 
                     foreach (var ch in charsResult.Characteristics)
