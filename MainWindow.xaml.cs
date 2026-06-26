@@ -20,6 +20,10 @@ namespace OBudsManager
         {
             InitializeComponent();
             
+            // Force native handle creation so that the WndProc hook can be registered and tray notifications work
+            // even when the application starts hidden (minimized to system tray)
+            new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+            
             // Watch system theme changes (Light/Dark mode)
             Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
@@ -34,6 +38,25 @@ namespace OBudsManager
             _btManager.Start();
 
             Closing += MainWindow_Closing;
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            
+            // Hook the WndProc message loop to intercept the system-wide single-instance restore message
+            var hwndSource = System.Windows.Interop.HwndSource.FromHwnd(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            hwndSource?.AddHook(WndProc);
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == App.RestoreMessageId)
+            {
+                RestoreWindow();
+                handled = true;
+            }
+            return IntPtr.Zero;
         }
 
         private void InitializeTrayIcon()
