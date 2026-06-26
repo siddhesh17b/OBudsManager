@@ -23,6 +23,45 @@ Any earbuds utilizing the **OPOv1** (Oppo Protocol) protocol:
 
 ---
 
+## Protocol Reverse Engineering & Contributions
+
+Special thanks to **[Aasheesh](https://github.com/AasheeshLikePanner)** for reverse engineering the OPOv1 protocol. If you want to contribute to expanding device support or add more features, here is the reference breakdown of how the protocol was cracked:
+
+### 1. The btsnoop Capture
+Android lets you enable **Bluetooth HCI snoop logging** in developer options. Every BLE packet between your phone and the earbuds gets captured. I copied that log to my laptop and opened it in Wireshark.
+
+### 2. Decompiling HeyMelody
+The official HeyMelody app has to communicate with the earbuds somehow. I pulled the APK, ran it through **jadx** (Java decompiler), and found the exact Java code that builds ANC commands:
+```java
+// Category = 0x04 (ANC), Sub-command = 0x04 (Set)
+// Combined = 1028 = 0x0404
+```
+
+### 3. Finding the Right Service
+The earbuds expose multiple BLE GATT services. Most people (including me initially) assumed the `FE2C` service was the main one.
+
+**Wrong.** `FE2C` is for telemetry and firmware updates. The actual ANC commands go through **`0000079A`** — the OPO (Oppo/OnePlus) protocol service.
+
+### 4. The Write Type Trap
+In CoreBluetooth/WinRT Bluetooth APIs, there are two write types:
+- `.withResponse` / `WriteWithResponse` — waits for acknowledgment
+- `.withoutResponse` / `WriteWithoutResponse` — fire and forget
+
+The earbuds **only** accept `.withoutResponse`. Using `.withResponse` silently fails without raising any errors.
+
+### 5. Authentication Required
+You cannot just send an ANC command. First you must:
+1. Send **HELLO** packet.
+2. Wait 2 seconds.
+3. Send **REGISTER** with device token `B5 50 A0 69`.
+4. Wait 1.5 seconds.
+5. Then you can send commands.
+
+### 6. The Response Channel Problem
+The earbuds send responses on both `0000079A` and `FE2C` services. If you only subscribe to one, you miss the responses. The fix is to subscribe to notifications on every characteristic across both services.
+
+---
+
 ## Building and Running
 
 ### Prerequisites
