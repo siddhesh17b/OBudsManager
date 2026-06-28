@@ -4,7 +4,7 @@
 [Setup]
 AppId={{5D875F9B-D102-11E1-9B23-00025B00A5A5}
 AppName=OBuds Manager
-AppVersion=1.0.0
+AppVersion=1.1.0
 AppPublisher=Siddhesh Bisen
 AppPublisherURL=https://github.com/siddhesh17b/OBudsManager
 DefaultDirName={commonpf}\OBuds Manager
@@ -12,7 +12,7 @@ DefaultGroupName=OBuds Manager
 DisableProgramGroupPage=yes
 DisableDirPage=yes
 OutputBaseFilename=OBudsManagerSetup
-Compression=lzma
+Compression=lzma2/ultra
 SolidCompression=yes
 WizardStyle=modern
 
@@ -30,8 +30,8 @@ AppMutex=OBudsManagerMutex
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-; Copy all files in the publish folder recursively to ensure app_icon.ico and WPF-UI assets are copied
-Source: "bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Copy all files in the publish folder recursively to ensure app_icon.ico and WPF-UI assets are copied, excluding large PDB symbols
+Source: "bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 ; Put the shortcut directly in the Programs list (root) so it is found instantly in Windows Search

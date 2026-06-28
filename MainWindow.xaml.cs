@@ -337,7 +337,7 @@ namespace OBudsManager
             // Version text
             var versionBlock = new System.Windows.Controls.TextBlock
             {
-                Text = "Version 1.0.0",
+                Text = "Version 1.1.0",
                 FontSize = 12,
                 Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush"),
                 Margin = new Thickness(0, 0, 0, 12)
