@@ -2,6 +2,8 @@
 
 A Fluent, modern Windows utility to manage noise control modes (ANC) and monitor battery levels for Oppo, OnePlus, and Realme Bluetooth earbuds.
 
+<img src="images/screenshot.png" width="550">
+
 ---
 
 ## Installation
