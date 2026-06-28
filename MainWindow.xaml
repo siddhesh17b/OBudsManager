@@ -216,6 +216,21 @@
                                         <ui:Button x:Name="BtnRestart" Content="Restart" Grid.Column="1" Click="BtnRestart_Click" VerticalAlignment="Center" Appearance="Secondary" />
                                     </Grid>
                                 </ui:Card>
+
+                                <!-- Check for Updates -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Check for Updates" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="View the latest releases on GitHub" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:Button x:Name="BtnUpdates" Content="Check" Grid.Column="1" Click="BtnUpdates_Click" VerticalAlignment="Center" Appearance="Secondary" />
+                                    </Grid>
+                                </ui:Card>
                             </StackPanel>
                         </ScrollViewer>
                     </Grid>
