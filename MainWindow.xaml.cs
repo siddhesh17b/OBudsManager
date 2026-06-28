@@ -532,7 +532,7 @@ namespace OBudsManager
             SaveCurrentSettings();
         }
 
-        private void BtnRestart_Click(object sender, RoutedEventArgs e)
+        private async void BtnRestart_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -551,7 +551,15 @@ namespace OBudsManager
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Failed to restart application: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                var errorBox = new Wpf.Ui.Controls.MessageBox
+                {
+                    Owner = this,
+                    Title = "Error",
+                    Content = $"Failed to restart application: {ex.Message}",
+                    CloseButtonText = "OK",
+                    Topmost = false
+                };
+                await errorBox.ShowDialogAsync();
             }
         }
 
@@ -578,15 +586,21 @@ namespace OBudsManager
             }
         }
 
-        private void BtnUpdates_Click(object sender, RoutedEventArgs e)
+        private async void BtnUpdates_Click(object sender, RoutedEventArgs e)
         {
-            var result = System.Windows.MessageBox.Show(
-                "Redirecting to GitHub. Continue?",
-                "Check for Updates",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            var messageBox = new Wpf.Ui.Controls.MessageBox
+            {
+                Owner = this,
+                Title = "Check for Updates",
+                Content = "Redirecting to GitHub. Continue?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "Close",
+                Topmost = false
+            };
 
-            if (result == MessageBoxResult.Yes)
+            var result = await messageBox.ShowDialogAsync();
+
+            if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
             {
                 try
                 {
@@ -598,7 +612,15 @@ namespace OBudsManager
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var errorBox = new Wpf.Ui.Controls.MessageBox
+                    {
+                        Owner = this,
+                        Title = "Error",
+                        Content = $"Failed to open browser: {ex.Message}",
+                        CloseButtonText = "OK",
+                        Topmost = false
+                    };
+                    await errorBox.ShowDialogAsync();
                 }
             }
         }
