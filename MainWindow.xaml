@@ -58,7 +58,12 @@
                                 <TextBlock x:Name="StatusTitle" Text="Scanning..." FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 <TextBlock x:Name="StatusSubtitle" Text="Looking for paired buds" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ui:ProgressRing x:Name="ConnectionLoading" Grid.Column="2" IsIndeterminate="True" Width="20" Height="20" BorderThickness="2" />
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:ProgressRing x:Name="ConnectionLoading" IsIndeterminate="True" Width="18" Height="18" BorderThickness="2" Margin="0,0,8,0" />
+                                <ui:Button x:Name="BtnReconnect" Width="28" Height="28" Padding="0" Click="BtnReconnect_Click" ToolTip="Reconnect Buds" Appearance="Transparent">
+                                    <ui:SymbolIcon Symbol="ArrowSync24" />
+                                </ui:Button>
+                            </StackPanel>
                         </Grid>
                     </ui:Card>
 

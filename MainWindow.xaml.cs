@@ -555,6 +555,29 @@ namespace OBudsManager
             }
         }
 
+        private async void BtnReconnect_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BtnReconnect.IsEnabled = false;
+                _btManager.Stop();
+                
+                // Reset connection status UI
+                StatusTitle.Text = "Disconnecting...";
+                StatusSubtitle.Text = "Resetting Bluetooth link...";
+                
+                await Task.Delay(500);
+                
+                _btManager.Start();
+                BtnReconnect.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error reconnecting: {ex.Message}");
+                BtnReconnect.IsEnabled = true;
+            }
+        }
+
         private void SaveCurrentSettings()
         {
             AppSettings settings = LoadSettings();
