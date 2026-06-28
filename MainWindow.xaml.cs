@@ -532,6 +532,29 @@ namespace OBudsManager
             SaveCurrentSettings();
         }
 
+        private void BtnRestart_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string appPath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (!string.IsNullOrEmpty(appPath))
+                {
+                    // Release the single-instance mutex to allow the new process to start
+                    App.ReleaseMutexForRestart();
+                    
+                    // Start new process
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(appPath) { UseShellExecute = true });
+                    
+                    // Close this instance
+                    ExitApplication();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Failed to restart application: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void SaveCurrentSettings()
         {
             AppSettings settings = LoadSettings();

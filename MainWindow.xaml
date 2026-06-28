@@ -196,6 +196,21 @@
                                         <ui:ToggleSwitch x:Name="ToggleStartup" Grid.Column="1" Click="ToggleStartup_Click" VerticalAlignment="Center" />
                                     </Grid>
                                 </ui:Card>
+
+                                <!-- Restart Application -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Restart Application" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="Relaunch app to reconnect buds" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:Button x:Name="BtnRestart" Content="Restart" Grid.Column="1" Click="BtnRestart_Click" VerticalAlignment="Center" Appearance="Secondary" />
+                                    </Grid>
+                                </ui:Card>
                             </StackPanel>
                         </ScrollViewer>
                     </Grid>

@@ -76,5 +76,19 @@ namespace OBudsManager
             }
             base.OnExit(e);
         }
+
+        public static void ReleaseMutexForRestart()
+        {
+            if (_appMutex != null)
+            {
+                try
+                {
+                    _appMutex.ReleaseMutex();
+                }
+                catch { }
+                _appMutex.Dispose();
+                _appMutex = null;
+            }
+        }
     }
 }
