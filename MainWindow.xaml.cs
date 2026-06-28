@@ -42,6 +42,10 @@ namespace OBudsManager
             // Load saved settings
             AppSettings settings = LoadSettings();
             ToggleTray.IsChecked = settings.MinimizeToTray;
+            
+            // Restore window size
+            Width = settings.WindowWidth;
+            Height = settings.WindowHeight;
 
             ToggleStartup.IsChecked = IsStartupEnabled();
             _btManager.Start();
@@ -149,6 +153,9 @@ namespace OBudsManager
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            // Save settings (including window size)
+            SaveCurrentSettings();
+
             // If Tray minimization is enabled, hide window and cancel closing
             if (ToggleTray.IsChecked == true && !_isExiting)
             {
@@ -522,10 +529,25 @@ namespace OBudsManager
 
         private void ToggleTray_Click(object sender, RoutedEventArgs e)
         {
-            AppSettings settings = new AppSettings
+            SaveCurrentSettings();
+        }
+
+        private void SaveCurrentSettings()
+        {
+            AppSettings settings = LoadSettings();
+            
+            if (WindowState == WindowState.Normal)
             {
-                MinimizeToTray = ToggleTray.IsChecked == true
-            };
+                settings.WindowWidth = Width;
+                settings.WindowHeight = Height;
+            }
+            else if (!RestoreBounds.IsEmpty)
+            {
+                settings.WindowWidth = RestoreBounds.Width;
+                settings.WindowHeight = RestoreBounds.Height;
+            }
+
+            settings.MinimizeToTray = ToggleTray.IsChecked == true;
             SaveSettings(settings);
         }
 
@@ -571,5 +593,7 @@ namespace OBudsManager
     public class AppSettings
     {
         public bool MinimizeToTray { get; set; } = true;
+        public double WindowWidth { get; set; } = 530;
+        public double WindowHeight { get; set; } = 530;
     }
 }
