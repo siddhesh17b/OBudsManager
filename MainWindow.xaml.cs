@@ -42,6 +42,10 @@ namespace OBudsManager
             // Load saved settings
             AppSettings settings = LoadSettings();
             ToggleTray.IsChecked = settings.MinimizeToTray;
+            
+            // Restore window size
+            Width = settings.WindowWidth;
+            Height = settings.WindowHeight;
 
             ToggleStartup.IsChecked = IsStartupEnabled();
             _btManager.Start();
@@ -149,6 +153,9 @@ namespace OBudsManager
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            // Save settings (including window size)
+            SaveCurrentSettings();
+
             // If Tray minimization is enabled, hide window and cancel closing
             if (ToggleTray.IsChecked == true && !_isExiting)
             {
@@ -330,7 +337,7 @@ namespace OBudsManager
             // Version text
             var versionBlock = new System.Windows.Controls.TextBlock
             {
-                Text = "Version 1.0.0",
+                Text = "Version 1.1.0",
                 FontSize = 12,
                 Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush"),
                 Margin = new Thickness(0, 0, 0, 12)
@@ -522,10 +529,96 @@ namespace OBudsManager
 
         private void ToggleTray_Click(object sender, RoutedEventArgs e)
         {
-            AppSettings settings = new AppSettings
+            SaveCurrentSettings();
+        }
+
+        private void BtnRestart_Click(object sender, RoutedEventArgs e)
+        {
+            try
             {
-                MinimizeToTray = ToggleTray.IsChecked == true
-            };
+                string appPath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
+                if (!string.IsNullOrEmpty(appPath))
+                {
+                    // Release the single-instance mutex to allow the new process to start
+                    App.ReleaseMutexForRestart();
+                    
+                    // Start new process
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(appPath) { UseShellExecute = true });
+                    
+                    // Close this instance
+                    ExitApplication();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Failed to restart application: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void BtnReconnect_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BtnReconnect.IsEnabled = false;
+                _btManager.Stop();
+                
+                // Reset connection status UI
+                StatusTitle.Text = "Disconnecting...";
+                StatusSubtitle.Text = "Resetting Bluetooth link...";
+                
+                await Task.Delay(500);
+                
+                _btManager.Start();
+                BtnReconnect.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error reconnecting: {ex.Message}");
+                BtnReconnect.IsEnabled = true;
+            }
+        }
+
+        private void BtnUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            var result = System.Windows.MessageBox.Show(
+                "Redirecting to GitHub. Continue?",
+                "Check for Updates",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "https://github.com/siddhesh17b/OBudsManager/releases",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Failed to open browser: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void SaveCurrentSettings()
+        {
+            AppSettings settings = LoadSettings();
+            
+            if (WindowState == WindowState.Normal)
+            {
+                settings.WindowWidth = Width;
+                settings.WindowHeight = Height;
+            }
+            else if (!RestoreBounds.IsEmpty)
+            {
+                settings.WindowWidth = RestoreBounds.Width;
+                settings.WindowHeight = RestoreBounds.Height;
+            }
+
+            settings.MinimizeToTray = ToggleTray.IsChecked == true;
             SaveSettings(settings);
         }
 
@@ -571,5 +664,7 @@ namespace OBudsManager
     public class AppSettings
     {
         public bool MinimizeToTray { get; set; } = true;
+        public double WindowWidth { get; set; } = 470;
+        public double WindowHeight { get; set; } = 530;
     }
 }

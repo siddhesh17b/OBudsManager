@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:OBudsManager"
         mc:Ignorable="d"
-        Title="OBuds Manager" Height="470" Width="380"
+        Title="OBuds Manager" Height="530" Width="470"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         WindowStartupLocation="CenterScreen"
@@ -58,7 +58,12 @@
                                 <TextBlock x:Name="StatusTitle" Text="Scanning..." FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                                 <TextBlock x:Name="StatusSubtitle" Text="Looking for paired buds" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <ui:ProgressRing x:Name="ConnectionLoading" Grid.Column="2" IsIndeterminate="True" Width="20" Height="20" BorderThickness="2" />
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:ProgressRing x:Name="ConnectionLoading" IsIndeterminate="True" Width="18" Height="18" BorderThickness="2" Margin="0,0,8,0" />
+                                <ui:Button x:Name="BtnReconnect" Width="28" Height="28" Padding="0" Click="BtnReconnect_Click" ToolTip="Reconnect Buds" Appearance="Transparent">
+                                    <ui:SymbolIcon Symbol="ArrowSync24" />
+                                </ui:Button>
+                            </StackPanel>
                         </Grid>
                     </ui:Card>
 
@@ -194,6 +199,36 @@
                                             <TextBlock Text="Launch minimized at startup" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <ui:ToggleSwitch x:Name="ToggleStartup" Grid.Column="1" Click="ToggleStartup_Click" VerticalAlignment="Center" />
+                                    </Grid>
+                                </ui:Card>
+
+                                <!-- Restart Application -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Restart Application" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="Relaunch app to reconnect buds" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:Button x:Name="BtnRestart" Content="Restart" Grid.Column="1" Click="BtnRestart_Click" VerticalAlignment="Center" Appearance="Secondary" />
+                                    </Grid>
+                                </ui:Card>
+
+                                <!-- Check for Updates -->
+                                <ui:Card Padding="12" Margin="0,0,0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="Check for Updates" FontWeight="Medium" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                                            <TextBlock Text="View the latest releases on GitHub" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                        <ui:Button x:Name="BtnUpdates" Content="Check" Grid.Column="1" Click="BtnUpdates_Click" VerticalAlignment="Center" Appearance="Secondary" />
                                     </Grid>
                                 </ui:Card>
                             </StackPanel>
