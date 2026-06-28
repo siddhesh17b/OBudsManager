@@ -93,11 +93,31 @@ namespace OBudsManager
                     bool success = await TryConnectToPairedDeviceAsync(token);
                     if (!success && !token.IsCancellationRequested)
                     {
-                        await StartScanningAsync(token);
+                        // Bypass active scanner if matching paired devices exist to avoid audio interference
+                        bool hasPaired = await HasPairedDeviceAsync();
+                        if (!hasPaired)
+                        {
+                            await StartScanningAsync(token);
+                        }
                     }
                 }
                 // Sleep for a while before checking connection status again
                 await Task.Delay(5000, token).ContinueWith(t => { });
+            }
+        }
+
+        private async Task<bool> HasPairedDeviceAsync()
+        {
+            try
+            {
+                string selector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
+                var pairedDevices = await DeviceInformation.FindAllAsync(selector);
+                return pairedDevices.Any(deviceInfo => IsMatchingDeviceName(deviceInfo.Name));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking paired devices: {ex.Message}");
+                return false;
             }
         }
 
@@ -154,7 +174,7 @@ namespace OBudsManager
             {
                 _watcher = new BluetoothLEAdvertisementWatcher
                 {
-                    ScanningMode = BluetoothLEScanningMode.Active
+                    ScanningMode = BluetoothLEScanningMode.Passive
                 };
 
                 bool deviceDiscovered = false;
@@ -199,11 +219,30 @@ namespace OBudsManager
             }
         }
 
+        private async Task<T?> WithTimeout<T>(Task<T> task, int durationMs, CancellationToken token) where T : class
+        {
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                var delayTask = Task.Delay(durationMs, cts.Token);
+                var completedTask = await Task.WhenAny(task, delayTask);
+                if (completedTask == task)
+                {
+                    cts.Cancel(); // Cancel delay task
+                    return await task;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         private async Task<bool> ConnectToDeviceByAddressAsync(ulong address, CancellationToken token)
         {
             try
             {
-                _device = await BluetoothLEDevice.FromBluetoothAddressAsync(address);
+                var deviceTask = BluetoothLEDevice.FromBluetoothAddressAsync(address).AsTask(token);
+                _device = await WithTimeout(deviceTask, 3000, token);
                 if (_device != null)
                 {
                     return await SetupDeviceServicesAsync(token);
@@ -220,7 +259,8 @@ namespace OBudsManager
         {
             try
             {
-                _device = await BluetoothLEDevice.FromIdAsync(deviceId);
+                var deviceTask = BluetoothLEDevice.FromIdAsync(deviceId).AsTask(token);
+                _device = await WithTimeout(deviceTask, 3000, token);
                 if (_device != null)
                 {
                     return await SetupDeviceServicesAsync(token);
