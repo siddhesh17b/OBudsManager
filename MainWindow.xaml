@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:local="clr-namespace:OBudsManager"
         mc:Ignorable="d"
-        Title="OBuds Manager" Height="530" Width="530"
+        Title="OBuds Manager" Height="530" Width="470"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
         WindowStartupLocation="CenterScreen"

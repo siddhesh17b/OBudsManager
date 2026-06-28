@@ -593,7 +593,7 @@ namespace OBudsManager
     public class AppSettings
     {
         public bool MinimizeToTray { get; set; } = true;
-        public double WindowWidth { get; set; } = 530;
+        public double WindowWidth { get; set; } = 470;
         public double WindowHeight { get; set; } = 530;
     }
 }
